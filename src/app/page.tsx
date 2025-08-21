@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import TimeEntryList from './components/TimeEntryList';
 import TimePicker from 'react-time-picker';
 import { supabase } from './supabaseClient';
-import { toCamelCase } from './utils/snakeCaseUtils';
+import { toCamelCase, toSnakeCase } from './utils/snakeCaseUtils';
 import DailyEntryList from './components/DailyEntryList';
 import { TimeEntry } from './types';
 
@@ -55,23 +55,6 @@ export default function Home() {
     }));
   };
 
-  // 將 camelCase 字串轉成 snake_case
-  function camelToSnake(key: string): string {
-    return key.replace(/([A-Z])/g, '_$1').toLowerCase();
-  }
-  function toSnakeCase(obj: Record<string, any>): Record<string, any> {
-    if (Array.isArray(obj)) {
-      return obj.map(v => (typeof v === 'object' && v !== null ? toSnakeCase(v) : v));
-    } else if (typeof obj === 'object' && obj !== null) {
-      return Object.fromEntries(
-        Object.entries(obj).map(([key, value]) => [
-          camelToSnake(key),
-          typeof value === 'object' && value !== null ? toSnakeCase(value) : value
-        ])
-      );
-    }
-    return obj;
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
