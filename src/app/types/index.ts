@@ -3,7 +3,7 @@ export interface TimeEntry {
   date: string;
   startTime: string;
   endTime: string;
-  workType: BreakType;
+  workType: WorkType;
 }
 
-export type BreakType = 'paid' | 'unpaid';
+export type WorkType = 'Work' | 'Paid break' | 'UnPaid break';

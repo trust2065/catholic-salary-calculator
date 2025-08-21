@@ -17,7 +17,7 @@ time-recording-system
 │   ├── components
 │   │   ├── TimeEntryForm.tsx
 │   │   ├── TimeEntryList.tsx
-│   │   └── BreakTypeSelector.tsx
+│   │   └── WorkTypeSelector.tsx
 │   ├── pages
 │   │   └── index.tsx
 │   ├── types

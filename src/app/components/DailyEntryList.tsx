@@ -1,4 +1,5 @@
 import React from "react";
+import { TimeEntry } from '../types';
 
 function timeToMinutes(time: string) {
   const [h, m] = time.split(":").map(Number);
@@ -15,16 +16,16 @@ function minutesToDecimalHours(mins: number) {
   return (mins / 60).toFixed(2);
 }
 
-export default function DailyEntryList({ entries }: { entries: any[]; }) {
+export default function DailyEntryList({ entries }: { entries: TimeEntry[]; }) {
   // Group by date
-  const grouped = entries.reduce((acc, entry) => {
+  const grouped = entries.reduce((acc: Record<string, TimeEntry[]>, entry) => {
     acc[entry.date] = acc[entry.date] || [];
     acc[entry.date].push(entry);
     return acc;
-  }, {} as Record<string, any[]>);
+  }, {} as Record<string, TimeEntry[]>);
 
   // Calculate daily hours and breaks
-  function calculateDaily(entries: any[]) {
+  function calculateDaily(entries: TimeEntry[]) {
     // Sort by start time
     const sorted = entries.sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
 
@@ -37,7 +38,7 @@ export default function DailyEntryList({ entries }: { entries: any[]; }) {
 
     // Subtract all unpaid breaks
     sorted.forEach((entry) => {
-      if (entry.breakType === "UnPaid break") {
+      if (entry.workType === "UnPaid break") {
         total -= timeToMinutes(entry.endTime) - timeToMinutes(entry.startTime);
       }
     });
@@ -54,15 +55,15 @@ export default function DailyEntryList({ entries }: { entries: any[]; }) {
       {Object.entries(grouped)
         .sort(([dateA], [dateB]) => dateB.localeCompare(dateA)) // Sort dates descending
         .map(([date, dayEntries]) => {
-          const { total, allowance, breaks } = calculateDaily(dayEntries as any[]);
+          const { total, allowance, breaks } = calculateDaily(dayEntries);
           return (
             <div key={date} className="mb-6">
               <h3 className="font-bold text-lg mb-2">{date}</h3>
               <ul>
-                {(dayEntries as any[]).map((entry, idx) => (
+                {(dayEntries).map((entry, idx) => (
                   <li key={entry.id ?? idx} className="mb-1">
-                    {entry.startTime}-{entry.endTime} | {entry.breakType}
-                    {entry.breakType !== "Work" && breaks[idx] > 0 && (
+                    {entry.startTime}-{entry.endTime} | {entry.workType}
+                    {entry.workType !== "Work" && breaks[idx] > 0 && (
                       <> ({breaks[idx]} min break)</>
                     )}
                   </li>

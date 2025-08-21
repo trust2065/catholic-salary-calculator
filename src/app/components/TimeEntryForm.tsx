@@ -5,7 +5,7 @@ const TimeEntryForm = () => {
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [breakTime, setBreakTime] = useState('');
-  const [breakType, setBreakType] = useState('unpaid');
+  const [workType, setWorkType] = useState('unpaid');
   const [error, setError] = useState('');
 
   const handleSubmit = (e) => {
@@ -17,7 +17,7 @@ const TimeEntryForm = () => {
     // Additional validation can be added here
     setError('');
     // Handle form submission logic here
-    console.log({ date, startTime, endTime, breakTime, breakType });
+    console.log({ date, startTime, endTime, breakTime, workType });
   };
 
   return (
@@ -58,8 +58,8 @@ const TimeEntryForm = () => {
         />
       </div>
       <div>
-        <label>Break Type:</label>
-        <select value={breakType} onChange={(e) => setBreakType(e.target.value)}>
+        <label>Work Type:</label>
+        <select value={workType} onChange={(e) => setWorkType(e.target.value)}>
           <option value="unpaid">Unpaid</option>
           <option value="paid">Paid</option>
         </select>

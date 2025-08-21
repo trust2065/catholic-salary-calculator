@@ -7,7 +7,7 @@ import { toCamelCase } from './utils/snakeCaseUtils';
 import DailyEntryList from './components/DailyEntryList';
 import { TimeEntry } from './types';
 
-const breakTypes = [
+const workTypes = [
   { value: "Work", label: "Work" },
   { value: "Paid break", label: "Paid Break(15 min)" },
   { value: "UnPaid break", label: "UnPaid Break" },
@@ -21,17 +21,17 @@ export default function Home() {
     date: today,
     startTime: "10:00",
     endTime: "12:00",
-    breakType: breakTypes[0].value, // "Work"
+    workType: workTypes[0].value, // "Work"
   });
   const [deletedEntry, setDeletedEntry] = useState<TimeEntry | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    if (name === "breakType") {
-      const selected = breakTypes.find((b) => b.value === value)!;
+    if (name === "workType") {
+      const selected = workTypes.find((b) => b.value === value)!;
       setForm((f) => ({
         ...f,
-        breakType: selected.value,
+        workType: selected.value,
       }));
     } else {
       setForm((f) => ({
@@ -114,7 +114,7 @@ export default function Home() {
   const handleUndo = async () => {
     if (deletedEntry) {
       // Re-insert into supabase
-      const { id, ...entryData } = deletedEntry as any;
+      const { id, ...entryData } = deletedEntry;
       await supabase.from('time_entries').insert([entryData]);
       // Reload entries
       setDeletedEntry(null);
@@ -183,12 +183,12 @@ export default function Home() {
         <div>
           <label className="block mb-1">Type</label>
           <select
-            name="breakType"
-            value={form.breakType}
+            name="workType"
+            value={form.workType}
             onChange={handleChange}
             className="border px-2 py-1 rounded w-full"
           >
-            {breakTypes.map((bt) => (
+            {workTypes.map((bt) => (
               <option key={bt.value} value={bt.value}>
                 {bt.label}
               </option>
