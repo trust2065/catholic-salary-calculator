@@ -8,7 +8,7 @@ const TimeEntryForm = () => {
   const [workType, setWorkType] = useState('unpaid');
   const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!date || !startTime || !endTime) {
       setError('Please fill in all fields.');
