@@ -51,37 +51,39 @@ export default function DailyEntryList({ entries }: { entries: any[]; }) {
 
   return (
     <div className='border rounded p-4'>
-      {Object.entries(grouped).map(([date, dayEntries]) => {
-        const { total, allowance, breaks } = calculateDaily(dayEntries as any[]);
-        return (
-          <div key={date} className="mb-6">
-            <h3 className="font-bold text-lg mb-2">{date}</h3>
-            <ul>
-              {(dayEntries as any[]).map((entry, idx) => (
-                <li key={entry.id ?? idx} className="mb-1">
-                  {entry.startTime}-{entry.endTime} | {entry.breakType}
-                  {entry.breakType !== "Work" && breaks[idx] > 0 && (
-                    <> ({breaks[idx]} min break)</>
-                  )}
-                </li>
-              ))}
-            </ul>
-            <div className="mt-2">
-              <hr />
-              <span className="font-semibold">Total Paid Time: </span>
-              {minutesToHHMM(total + allowance)}
-              <span className="ml-2 text-blue-600">
-                ({minutesToDecimalHours(total + allowance)} hours)
-              </span>
-              {allowance > 0 && (
-                <span className="ml-2 text-green-600">
-                  (+{minutesToHHMM(allowance)} allowance)
+      {Object.entries(grouped)
+        .sort(([dateA], [dateB]) => dateB.localeCompare(dateA)) // Sort dates descending
+        .map(([date, dayEntries]) => {
+          const { total, allowance, breaks } = calculateDaily(dayEntries as any[]);
+          return (
+            <div key={date} className="mb-6">
+              <h3 className="font-bold text-lg mb-2">{date}</h3>
+              <ul>
+                {(dayEntries as any[]).map((entry, idx) => (
+                  <li key={entry.id ?? idx} className="mb-1">
+                    {entry.startTime}-{entry.endTime} | {entry.breakType}
+                    {entry.breakType !== "Work" && breaks[idx] > 0 && (
+                      <> ({breaks[idx]} min break)</>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-2">
+                <hr />
+                <span className="font-semibold">Total Paid Time: </span>
+                {minutesToHHMM(total + allowance)}
+                <span className="ml-2 text-blue-600">
+                  ({minutesToDecimalHours(total + allowance)} hours)
                 </span>
-              )}
+                {allowance > 0 && (
+                  <span className="ml-2 text-green-600">
+                    (+{minutesToHHMM(allowance)} allowance)
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
     </div>
   );
 }

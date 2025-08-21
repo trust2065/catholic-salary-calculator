@@ -10,7 +10,7 @@ import { TimeEntry } from './types';
 const breakTypes = [
   { value: "Work", label: "Work" },
   { value: "Paid break", label: "Paid Break(15 min)" },
-  { value: "UnPaid break", label: "Non-Paid Break" },
+  { value: "UnPaid break", label: "UnPaid Break" },
 ];
 
 export default function Home() {
@@ -24,7 +24,6 @@ export default function Home() {
     breakType: breakTypes[0].value, // "Work"
   });
   const [deletedEntry, setDeletedEntry] = useState<TimeEntry | null>(null);
-  const [deletedEntryId, setDeletedEntryId] = useState<number | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -104,7 +103,6 @@ export default function Home() {
       return;
     }
     setDeletedEntry(entry);
-    setDeletedEntryId(entryId);
     setEntries((prev) => prev.filter((_, i) => i !== index));
     // Delete from supabase
     if (entryId) {
@@ -120,7 +118,6 @@ export default function Home() {
       await supabase.from('time_entries').insert([entryData]);
       // Reload entries
       setDeletedEntry(null);
-      setDeletedEntryId(null);
       // Optionally, reload from supabase
       // Or just add back to entries
       setEntries((prev) => [deletedEntry!, ...prev]);
