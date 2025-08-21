@@ -4,21 +4,13 @@ import TimeEntryList from './components/TimeEntryList';
 import TimePicker from 'react-time-picker';
 import { supabase } from './supabaseClient';
 import { toCamelCase } from './utils/snakeCaseUtils';
-
-interface TimeEntry {
-  // Optional id for entries loaded from supabase
-  id?: number;
-  date: string;
-  startTime: string;
-  endTime: string;
-  breakType: string;
-  breakDuration: number;
-}
+import DailyEntryList from './components/DailyEntryList';
+import { TimeEntry } from './types';
 
 const breakTypes = [
-  { value: "Work", label: "Work (no break)", duration: 0 },
-  { value: "Paid", label: "Paid Break (custom, paid)", duration: 0 },
-  { value: "No Pay", label: "Non-Paid Break (15 min, no pay)", duration: 15 },
+  { value: "Work", label: "Work" },
+  { value: "Paid break", label: "Paid Break(15 min)" },
+  { value: "UnPaid break", label: "Non-Paid Break" },
 ];
 
 export default function Home() {
@@ -30,7 +22,6 @@ export default function Home() {
     startTime: "10:00",
     endTime: "12:00",
     breakType: breakTypes[0].value, // "Work"
-    breakDuration: breakTypes[0].duration,
   });
   const [deletedEntry, setDeletedEntry] = useState<TimeEntry | null>(null);
   const [deletedEntryId, setDeletedEntryId] = useState<number | null>(null);
@@ -42,7 +33,6 @@ export default function Home() {
       setForm((f) => ({
         ...f,
         breakType: selected.value,
-        breakDuration: selected.duration,
       }));
     } else {
       setForm((f) => ({
@@ -208,19 +198,6 @@ export default function Home() {
             ))}
           </select>
         </div>
-        {form.breakType === "Paid" && (
-          <div>
-            <label className="block mb-1">Break Duration (minutes)</label>
-            <input
-              type="number"
-              name="breakDuration"
-              min={0}
-              value={form.breakDuration}
-              onChange={handleBreakDurationChange}
-              className="border px-2 py-1 rounded w-full"
-            />
-          </div>
-        )}
         <button
           type="submit"
           className="bg-blue-600 text-white px-4 py-2 rounded"
@@ -229,6 +206,9 @@ export default function Home() {
         </button>
       </form>
       <TimeEntryList entries={entries} onDelete={handleDelete} />
+
+      <h4 className="mt-8 text-lg font-semibold mb-2 text-gray-200">Daily Records</h4>
+      <DailyEntryList entries={entries} />
       {deletedEntry && (
         <div className="mt-4 bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-2 rounded">
           Record deleted.

@@ -1,13 +1,5 @@
 import React from 'react';
-
-interface TimeEntry {
-  id?: number;
-  date: string;
-  startTime: string;
-  endTime: string;
-  breakType: string;
-  breakDuration: number; // in minutes
-}
+import { TimeEntry } from '../types';
 
 interface TimeEntryListProps {
   entries: TimeEntry[];
@@ -22,7 +14,7 @@ const TimeEntryList: React.FC<TimeEntryListProps> = ({ entries, onDelete }) => {
         {entries.map((entry, idx) => (
           <li key={entry.id ?? idx} className="flex items-center justify-between py-2 border-b">
             <span>
-              {entry.date} {entry.startTime}-{entry.endTime} | {entry.breakType} ({entry.breakDuration} min)
+              {entry.date} {entry.startTime}-{entry.endTime} | {entry.workType}
             </span>
             <button
               className="ml-4 text-red-600 underline"

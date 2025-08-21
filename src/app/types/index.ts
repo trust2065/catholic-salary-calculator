@@ -1,10 +1,9 @@
 export interface TimeEntry {
-  id: string;
+  id: number;
   date: string;
   startTime: string;
   endTime: string;
-  breakDuration: number; // in minutes
-  breakType: BreakType;
+  workType: BreakType;
 }
 
 export type BreakType = 'paid' | 'unpaid';
