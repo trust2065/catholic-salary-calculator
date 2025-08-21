@@ -1,10 +1,13 @@
-"use client";
-
-import React, { useState } from "react";
+'use client';
+import React, { useState, useEffect } from "react";
 import TimeEntryList from './components/TimeEntryList';
 import TimePicker from 'react-time-picker';
+import { supabase } from './supabaseClient';
+import { toCamelCase } from './utils/snakeCaseUtils';
 
 interface TimeEntry {
+  // Optional id for entries loaded from supabase
+  id?: number;
   date: string;
   startTime: string;
   endTime: string;
@@ -19,14 +22,18 @@ const breakTypes = [
 ];
 
 export default function Home() {
+  const today = new Date().toISOString().slice(0, 10); // yyyy-mm-dd
+
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [form, setForm] = useState({
-    date: "",
-    startTime: "",
-    endTime: "",
-    breakType: breakTypes[0].value,
+    date: today,
+    startTime: "10:00",
+    endTime: "12:00",
+    breakType: breakTypes[0].value, // "Work"
     breakDuration: breakTypes[0].duration,
   });
+  const [deletedEntry, setDeletedEntry] = useState<TimeEntry | null>(null);
+  const [deletedEntryId, setDeletedEntryId] = useState<number | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -59,18 +66,95 @@ export default function Home() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // 將 camelCase 字串轉成 snake_case
+  function camelToSnake(key: string): string {
+    return key.replace(/([A-Z])/g, '_$1').toLowerCase();
+  }
+  function toSnakeCase(obj: Record<string, any>): Record<string, any> {
+    if (Array.isArray(obj)) {
+      return obj.map(v => (typeof v === 'object' && v !== null ? toSnakeCase(v) : v));
+    } else if (typeof obj === 'object' && obj !== null) {
+      return Object.fromEntries(
+        Object.entries(obj).map(([key, value]) => [
+          camelToSnake(key),
+          typeof value === 'object' && value !== null ? toSnakeCase(value) : value
+        ])
+      );
+    }
+    return obj;
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setEntries((prev) => [...prev, form]);
+    // Insert and get the inserted row (with id)
+    const { data, error } = await supabase
+      .from('time_entries')
+      .insert([toSnakeCase(form)])
+      .select(); // returns the inserted row(s)
+    if (data && data.length > 0) {
+      // Use general toCamelCase function for UI
+      setEntries((prev) => [toCamelCase(data[0]) as TimeEntry, ...prev]);
+    }
     setForm((f) => ({
       ...f,
       startTime: "",
       endTime: "",
-      breakType: breakTypes[0].value,
-      breakDuration: breakTypes[0].duration,
       date: f.date,
     }));
   };
+
+  // Delete handler
+  const handleDelete = async (entry: TimeEntry, index: number) => {
+    // Find the id from entries loaded from supabase (assuming you add id to TimeEntry)
+    const entryId = entries[index]?.id;
+    console.log(entry);
+    console.log("Deleting entry with ID:", entryId);
+    if (!entryId) {
+      console.warn("No ID found for entry, cannot delete");
+      return;
+    }
+    setDeletedEntry(entry);
+    setDeletedEntryId(entryId);
+    setEntries((prev) => prev.filter((_, i) => i !== index));
+    // Delete from supabase
+    if (entryId) {
+      await supabase.from('time_entries').delete().eq('id', entryId);
+    }
+  };
+
+  // Undo handler
+  const handleUndo = async () => {
+    if (deletedEntry) {
+      // Re-insert into supabase
+      const { id, ...entryData } = deletedEntry as any;
+      await supabase.from('time_entries').insert([entryData]);
+      // Reload entries
+      setDeletedEntry(null);
+      setDeletedEntryId(null);
+      // Optionally, reload from supabase
+      // Or just add back to entries
+      setEntries((prev) => [deletedEntry!, ...prev]);
+    }
+  };
+
+  // Load top 100 records on init
+  useEffect(() => {
+    async function fetchEntries() {
+      const { data, error } = await supabase
+        .from('time_entries')
+        .select('*')
+        .order('id', { ascending: false })
+        .limit(100);
+      if (data) {
+
+        setEntries(data.map(toCamelCase) as TimeEntry[]);
+      }
+      if (error) {
+        console.error(error);
+      }
+    }
+    fetchEntries();
+  }, []);
 
   return (
     <div className="max-w-xl mx-auto p-6">
@@ -144,7 +228,18 @@ export default function Home() {
           Record Entry
         </button>
       </form>
-      <TimeEntryList entries={entries} />
+      <TimeEntryList entries={entries} onDelete={handleDelete} />
+      {deletedEntry && (
+        <div className="mt-4 bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-2 rounded">
+          Record deleted.
+          <button
+            className="ml-2 underline text-blue-600"
+            onClick={handleUndo}
+          >
+            Undo
+          </button>
+        </div>
+      )}
     </div>
   );
 }
